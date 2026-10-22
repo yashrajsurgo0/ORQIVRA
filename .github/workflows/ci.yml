@@ -1,0 +1,24 @@
+name: Validate ORQIVRA
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install -r requirements-deploy.txt
+      - run: python -m unittest discover -s webapp/backend -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: webapp/frontend/package-lock.json
+      - run: npm ci --prefix webapp/frontend --no-audit --no-fund
+      - run: npm run build --prefix webapp/frontend
+        env:
+          CI: 'true'
+          REACT_APP_PUBLIC_DEMO: 'true'
