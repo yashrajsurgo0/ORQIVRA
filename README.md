@@ -5,6 +5,10 @@
   <p>An agricultural evidence workspace connecting crop history, regional weather, transparent machine learning and practical follow-up planning.</p>
 </div>
 
+**[Live demo](https://orqivra.onrender.com) · [Source code](https://github.com/yashrajsurgo0/ORQIVRA)**
+
+The free demo may take about a minute to wake after inactivity. Choose **Explore the resilience demo** to begin.
+
 ## Why this project
 
 Farmers, extension teams, researchers and agricultural businesses need to distinguish useful evidence from unsupported predictions. ORQIVRA combines auditable historical analysis, model validation, current regional conditions and planning tools in one interface. It makes uncertainty and missing data visible.
