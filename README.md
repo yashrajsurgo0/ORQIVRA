@@ -98,7 +98,7 @@ python -m unittest discover -s webapp/backend -v
 CI=true npm run build --prefix webapp/frontend
 ```
 
-Tests cover temporal leakage, conformal intervals, extrapolation, cleaning, workspace isolation, operations, missing/stale weather, provider failure and crop-outlook backtests. GitHub Actions repeats the Python suite and frontend build.
+Tests cover temporal leakage, conformal intervals, extrapolation, cleaning, workspace isolation, operations, missing/stale weather, provider failure and crop-outlook backtests. The included GitHub Actions workflow repeats the Python suite and frontend build when Actions is enabled. Actions is currently disabled on this repository; release checks were run locally.
 
 ## Honest scope
 
