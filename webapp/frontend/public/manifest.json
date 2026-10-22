@@ -1,0 +1,30 @@
+{
+  "id": ".",
+  "name": "ORQIVRA \u2014 Intelligence Rooted in Nature",
+  "short_name": "ORQIVRA",
+  "description": "Agricultural intelligence rooted in nature.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fbf8f1",
+  "theme_color": "#123523",
+  "icons": [
+    {
+      "src": "brand/orqivra-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "brand/orqivra-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "brand/orqivra-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
