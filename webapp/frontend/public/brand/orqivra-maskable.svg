@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 256 256"><title>ORQIVRA</title><defs>
+  <linearGradient id="forest" x1="0" y1="1" x2=".9" y2="0"><stop stop-color="#08281c"/><stop offset=".5" stop-color="#2b4d29"/><stop offset="1" stop-color="#a0ad68"/></linearGradient>
+  <linearGradient id="leaf" x1=".25" y1="1" x2=".7" y2="0"><stop stop-color="#08291e"/><stop offset="1" stop-color="#7c9252"/></linearGradient>
+</defs><rect width="256" height="256" fill="#f4ebdc"/><g transform="translate(43 37) scale(.66)"><path fill="url(#forest)" d="M39 131 C37 76 81 28 137 25 C196 19 229 66 224 120 C220 165 194 188 160 202 C174 216 193 228 215 224 C192 245 160 230 150 210 C143 197 151 181 159 162 C179 112 177 58 143 40 C101 18 54 68 52 129 Z"/>
+<path fill="url(#leaf)" d="M34 141 C67 125 105 140 134 167 C147 179 151 193 159 210 C98 232 49 196 40 153 C66 156 89 173 111 188 C126 198 140 205 151 207 C123 188 95 158 63 148 C50 144 40 143 34 146 Z"/></g></svg>
