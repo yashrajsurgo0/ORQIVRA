@@ -3,13 +3,14 @@ from collections import OrderedDict
 from datetime import datetime, timezone
 import json
 import math
+import logging
 import os
 import ssl
 import threading
 import time
 from urllib.parse import urlencode
 from urllib.request import urlopen, Request
-from urllib.error import URLError
+from urllib.error import URLError, HTTPError
 import numpy as np
 from werkzeug.exceptions import ServiceUnavailable
 from operations import number
@@ -36,7 +37,13 @@ def fetch_json(host, params, ttl=900):
             data = json.loads(response.read(2_000_000))
         if not isinstance(data, dict) or data.get('error'):
             raise ValueError('Invalid provider response')
-    except (URLError, TimeoutError, ValueError, OSError):
+    except HTTPError as exc:
+        logging.getLogger(__name__).warning('Weather provider HTTP status=%s', exc.code)
+        message = ('Weather provider rate limit reached. Please try again later.' if exc.code == 429
+                   else f'Weather provider rejected the request (HTTP {exc.code}). Please try again later.')
+        raise ServiceUnavailable(message + ' No synthetic weather has been substituted.') from None
+    except (URLError, TimeoutError, ValueError, OSError) as exc:
+        logging.getLogger(__name__).warning('Weather provider failed: %s', type(exc).__name__)
         raise ServiceUnavailable('Weather provider is unavailable. Retry shortly; no synthetic weather has been substituted.') from None
     data['_orqivra_fetched_at'] = datetime.now(timezone.utc).isoformat()
     with _cache_lock:

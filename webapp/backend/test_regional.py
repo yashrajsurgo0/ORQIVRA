@@ -3,7 +3,7 @@ import copy
 from datetime import datetime, timedelta, timezone
 import unittest
 from unittest.mock import patch
-from urllib.error import URLError
+from urllib.error import URLError, HTTPError
 import app as backend
 import regional
 from data import demo_data
@@ -31,6 +31,18 @@ class RegionalTest(unittest.TestCase):
     def snapshot(self, raw=None):
         with patch('regional.fetch_json', return_value=raw or provider()):
             return regional.weather({'latitude':18.52,'longitude':73.85,'name':'Pune'})
+
+    def test_provider_http_failure_has_safe_actionable_message(self):
+        for status, message in [(429, 'rate limit'), (403, 'HTTP 403')]:
+            regional._cache.clear()
+            with patch('regional.urlopen', side_effect=HTTPError('https://api.open-meteo.com/private', status, 'provider detail', {}, None)):
+                with self.assertLogs('regional', level='WARNING') as logs:
+                    response = self.client.post('/api/regional/weather', headers=self.headers,
+                        json={'latitude':18.52, 'longitude':73.85, 'name':'Pune'})
+            self.assertEqual(response.status_code, 503)
+            self.assertIn(message, response.get_json()['error'])
+            self.assertNotIn('private', str(logs.output))
+            self.assertIsNone(self.client.get('/api/regional/weather', headers=self.headers).get_json()['weather'])
 
     def test_weather_periods_units_and_missing_soil(self):
         snapshot = self.snapshot()
