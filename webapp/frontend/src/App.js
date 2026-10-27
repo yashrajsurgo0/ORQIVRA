@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './App.css';
 import './brand.css';
 import FileUpload from './components/FileUpload';
@@ -20,7 +20,9 @@ function App() {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [scenarioBusy, setScenarioBusy] = useState(false);
+  const [pendingOperations, setPendingOperations] = useState(0);
+  const scenarioBusy = pendingOperations > 0;
+  const setScenarioBusy = useCallback(value => setPendingOperations(count => Math.max(0, count + (value ? 1 : -1))), []);
   const [restoring, setRestoring] = useState(true);
   const [error, setError] = useState('');
   const [view, setView] = useState('impact');
@@ -28,6 +30,12 @@ function App() {
   const [showImport, setShowImport] = useState(true);
   const [exporting, setExporting] = useState(false);
   const busy = loading || uploading || restoring || scenarioBusy;
+  const [expired, setExpired] = useState(false);
+  useEffect(() => {
+    const expire = () => setExpired(true);
+    window.addEventListener('orqivra-workspace-expired', expire);
+    return () => window.removeEventListener('orqivra-workspace-expired', expire);
+  }, []);
   useEffect(() => {
     let active = true;
     const restore = async () => {
@@ -43,7 +51,7 @@ function App() {
     };
     restore(); return () => { active = false; };
   }, []);
-  const handleFileUpload = data => { setDataset(data); setResults(null); setError(''); setView('impact'); };
+  const handleFileUpload = data => { setExpired(false); setDataset(data); setResults(null); setError(''); setView('impact'); };
   const handleAnalyze = async () => {
     setLoading(true); setError('');
     try { const result = await request('analyze', { method: 'POST' }); setResults(result); setDataset(result.dataset); setShowImport(false); }
@@ -60,7 +68,8 @@ function App() {
     <main id="main" className="container">
       {!results && <section className="hero orqivra-hero"><div className="hero-story"><p className="eyebrow"><span className="gold-line" /> NATURE INFORMS. INTELLIGENCE EMPOWERS.</p><h1>Intelligence<br /><em>rooted in nature.</em></h1><p className="hero-copy">A deeper understanding of our fields. A more resilient future for our food. Turn agricultural observations into evidence for better decisions.</p><div className="hero-signature"><span>FIELD INSIGHT</span><i /><span>CLIMATE RESILIENCE</span><i /><span>MEANINGFUL IMPACT</span></div></div><div className="nature-panel" style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/brand/orqivra-botanical.svg)` }}><div className="nature-panel-top"><span>ORQIVRA / NATURE × TECHNOLOGY</span><span className="nature-sun" aria-hidden="true" /></div><img className="hero-emblem" src={`${process.env.PUBLIC_URL}/brand/orqivra-mark.svg`} alt="ORQIVRA leaf-shaped Q" /><div className="nature-panel-bottom"><p>Rooted in evidence.<br />Growing with purpose.</p><span>01 — AGRICULTURAL RESILIENCE</span></div></div></section>}
       <div className={`audience-bar ${results ? 'spaced' : ''}`}><span className="eyebrow">YOUR PERSPECTIVE</span><div className="audience-options">{audiences.map(([key, name]) => <button disabled={busy} key={key} aria-pressed={audience === key} className={audience === key ? 'active' : ''} onClick={() => { setAudience(key); setView(key === 'business' && results ? 'markets' : 'impact'); }}>{name}</button>)}</div></div>
-      {restoring && <p role="status" className="loading">Restoring your workspace…</p>}
+      {restoring && <p role="status" className="loading">Reconnecting to your workspace… This may take up to 15 seconds.</p>}
+      {expired && <div role="alert" className="notice">Your temporary workspace expired after a server restart or inactivity. <button disabled={busy} onClick={() => { clearToken(); setDataset(null); setResults(null); setShowImport(true); setExpired(false); setError(''); }}>Start a new workspace</button></div>}
       {results && <div className="workspace-heading"><div><p className="eyebrow">CONNECTED TO YOUR EVIDENCE</p><h1>{audience === 'research' ? 'Research & validation' : audience === 'business' ? 'Supply & resilience' : 'Field decision workspace'}</h1><p>{dataset.filename} · {dataset.valid_rows} observations · {dataset.year_min}–{dataset.year_max}</p></div><div className="button-group"><button className="secondary" disabled={busy} onClick={() => setShowImport(!showImport)}>{showImport ? 'Hide import' : 'Change dataset'}</button><button disabled={exporting || busy} onClick={() => save('report')}>{exporting ? 'Exporting…' : 'Export evidence report ↓'}</button></div></div>}
       {(showImport || !results) && <section className="section import-section"><FileUpload onFileUpload={handleFileUpload} disabled={busy} onBusy={setUploading} />{dataset && <div className="dataset-bar"><div><strong>{dataset.filename}</strong><p>{dataset.valid_rows} usable rows · {dataset.columns} columns · {dataset.removed_rows} exclusions</p></div><button onClick={handleAnalyze} disabled={busy}>{loading ? 'Validating models…' : 'Build evidence workspace ↗'}</button></div>}</section>}
       {error && <p className="error" role="alert">{error}</p>}
@@ -68,7 +77,7 @@ function App() {
       {dataset?.source_type === 'synthetic' && <Notice type="demo"><strong>Synthetic demonstration data.</strong> Locations are illustrative. Reported performance and review signals do not establish real-world agricultural accuracy.</Notice>}
       {dataset && dataset.source_type !== 'synthetic' && <Notice>Source: {dataset.source_name} · {dataset.source_type === 'observed' ? 'Observed, as declared by uploader' : 'Unverified provenance'}. Yield: {dataset.yield_unit} · Price: {dataset.price_unit}. Source and units have not been independently verified.</Notice>}
       {results ? <div key={dataset.quality.fingerprint}>
-        <nav className="view-nav" aria-label="Workspace views">{tabs.map(([key, name]) => <button key={key} disabled={busy} aria-pressed={view === key} className={view === key ? 'selected' : ''} onClick={() => setView(key)}>{name}</button>)}</nav>
+        <nav className="view-nav" aria-label="Workspace views">{tabs.map(([key, name]) => <button key={key} disabled={loading || uploading || restoring} aria-pressed={view === key} className={view === key ? 'selected' : ''} onClick={() => setView(key)}>{name}</button>)}</nav>
         {view === 'impact' && <ImpactOverview insights={results.insights} dataset={dataset} audience={audience} />}
         <div hidden={view !== 'scenarios'}><ScenarioLab options={results.scenario_options} dataset={dataset} onBusy={setScenarioBusy} /></div>
         <div hidden={view !== 'operations'}><Operations dataset={dataset} onBusy={setScenarioBusy} /></div>

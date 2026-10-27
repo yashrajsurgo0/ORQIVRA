@@ -1,0 +1,25 @@
+const fs = require('fs');
+const assert = require('node:assert/strict');
+(async () => {
+  global.sessionStorage = { getItem() { throw Error('blocked'); }, setItem() { throw Error('blocked'); }, removeItem() { throw Error('blocked'); } };
+  let expired = false;
+  global.window = { dispatchEvent() { expired = true; } };
+  const source = fs.readFileSync(require('path').join(__dirname, '../webapp/frontend/src/api.js'), 'utf8');
+  const api = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
+  global.fetch = async () => ({ok:true,json:async()=>({dataset_id:'synthetic-test'})});
+  await api.request('demo'); assert.equal(api.getToken(), 'synthetic-test');
+  global.fetch = async (url,opts) => { assert.equal(opts.headers['X-Dataset-ID'], 'synthetic-test'); return {ok:true,json:async()=>({ready:true})}; };
+  assert.equal((await api.request('operations')).ready,true);
+  global.fetch = () => new Promise(()=>{});
+  await assert.rejects(api.request('workspace',{timeoutMs:10}),/taking too long/);
+  global.fetch = async () => ({ok:true,json:()=>new Promise(()=>{})});
+  await assert.rejects(api.request('operations',{timeoutMs:10}),/taking too long/);
+  global.fetch = async () => ({ok:false,json:async()=>{throw Error('html');}});
+  await assert.rejects(api.request('operations'),/incomplete response/);
+  global.fetch = async () => ({ok:false,status:404,json:async()=>({error:'Workspace expired or unavailable.'})});
+  await assert.rejects(api.request('operations'),e=>e.status===404);
+  assert.equal(expired,true); assert.equal(api.getToken(),null);
+  global.fetch = async () => {throw Error('offline')};
+  await assert.rejects(api.request('demo'),/Cannot reach/);
+  console.log('PASS: blocked storage, token reuse, stalled fetch/body, invalid JSON, expiry, network failure');
+})();
