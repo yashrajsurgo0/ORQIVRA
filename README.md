@@ -115,3 +115,9 @@ Tests cover temporal leakage, conformal intervals, extrapolation, cleaning, work
 ## Resume description
 
 Developed ORQIVRA, a full-stack agricultural intelligence platform integrating regional weather APIs, six regression models with chronological validation, an evidence-based assistant, and crop planning workflows. Implemented data-quality audits, uncertainty reporting, backtested yield outlooks, and reproducible Docker deployment.
+
+### Historical analysis
+
+The Historical analysis workspace adds crop, district, season and year filters; equal-year-weighted earlier/recent comparisons; yield variability; rainfall/temperature correlations; and a user-defined yield threshold. Switch between yield, rainfall, temperature and market-price charts, inspect annual observation counts, or export a JSON report with the filters and dataset fingerprint.
+
+These are descriptive statistics, not forecasts or causal effects. At least four observed years and two years per comparison period are required. Correlations require five years and variation in both variables. Missing years are reported rather than filled; percentage changes are withheld for zero baselines and Celsius temperature. The public demo uses synthetic observations.

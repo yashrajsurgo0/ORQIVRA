@@ -15,6 +15,7 @@ from modeling import train_models, scenario_options, predict_scenario
 from regional import locations, weather, briefing
 from operations import review_settings, benchmark, production_plan, task_fields
 from insights import build_insights
+from history import historical_analysis
 from store import Workspace, WorkspaceStore
 
 app = Flask(__name__, static_folder=None)
@@ -229,6 +230,13 @@ def compare_districts():
 def calculate_production():
     current()
     return respond(production_plan(object_payload()))
+
+
+@app.post('/api/history')
+def history():
+    item = current()
+    result = historical_analysis(item.frame, object_payload())
+    return respond({**result, 'dataset_fingerprint': item.audit['fingerprint'], 'source_type': item.metadata['source_type']})
 
 
 @app.get('/api/operations')

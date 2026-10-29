@@ -9,12 +9,13 @@ import DataExplorer from './components/DataExplorer';
 import MarketIntelligence from './components/MarketIntelligence';
 import Methodology from './components/Methodology';
 import Operations from './components/Operations';
+import HistoricalAnalysis from './components/HistoricalAnalysis';
 import RegionalIntelligence from './components/RegionalIntelligence';
 import { Notice } from './components/shared';
 import { request, exportFile, getToken, clearToken } from './api';
 
 const audiences = [['field', 'Farmers & extension'], ['research', 'Researchers & policy'], ['business', 'Business & supply']];
-const tabs = [['impact', 'Impact overview'], ['scenarios', 'Scenario lab'], ['regional', 'Regional intelligence'], ['operations', 'Operations'], ['models', 'Model validation'], ['markets', 'Supply intelligence'], ['data', 'Data explorer'], ['method', 'Methods & sources']];
+const tabs = [['impact', 'Impact overview'], ['scenarios', 'Scenario lab'], ['regional', 'Regional intelligence'], ['operations', 'Operations'], ['history', 'Historical analysis'], ['models', 'Model validation'], ['markets', 'Supply intelligence'], ['data', 'Data explorer'], ['method', 'Methods & sources']];
 function App() {
   const [dataset, setDataset] = useState(null);
   const [results, setResults] = useState(null);
@@ -80,6 +81,7 @@ function App() {
         <nav className="view-nav" aria-label="Workspace views">{tabs.map(([key, name]) => <button key={key} disabled={loading || uploading || restoring} aria-pressed={view === key} className={view === key ? 'selected' : ''} onClick={() => setView(key)}>{name}</button>)}</nav>
         {view === 'impact' && <ImpactOverview insights={results.insights} dataset={dataset} audience={audience} />}
         <div hidden={view !== 'scenarios'}><ScenarioLab options={results.scenario_options} dataset={dataset} onBusy={setScenarioBusy} /></div>
+        <div hidden={view !== 'history'}><HistoricalAnalysis dataset={dataset} onBusy={setScenarioBusy} /></div>
         <div hidden={view !== 'operations'}><Operations dataset={dataset} onBusy={setScenarioBusy} /></div>
         <div hidden={view !== 'regional'}><RegionalIntelligence dataset={dataset} onBusy={setScenarioBusy} /></div>
         {view === 'models' && <><ModelComparison models={results.models} dataset={dataset} />{results.models.available && <button className="secondary" disabled={exporting} onClick={() => save('predictions')}>Download held-out predictions CSV ↓</button>}</>}
