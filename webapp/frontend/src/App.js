@@ -10,12 +10,13 @@ import MarketIntelligence from './components/MarketIntelligence';
 import Methodology from './components/Methodology';
 import Operations from './components/Operations';
 import HistoricalAnalysis from './components/HistoricalAnalysis';
+import CropPortfolio from './components/CropPortfolio';
 import RegionalIntelligence from './components/RegionalIntelligence';
 import { Notice } from './components/shared';
 import { request, exportFile, getToken, clearToken } from './api';
 
 const audiences = [['field', 'Farmers & extension'], ['research', 'Researchers & policy'], ['business', 'Business & supply']];
-const tabs = [['impact', 'Impact overview'], ['scenarios', 'Scenario lab'], ['regional', 'Regional intelligence'], ['operations', 'Operations'], ['history', 'Historical analysis'], ['models', 'Model validation'], ['markets', 'Supply intelligence'], ['data', 'Data explorer'], ['method', 'Methods & sources']];
+const tabs = [['impact', 'Impact overview'], ['scenarios', 'Scenario lab'], ['regional', 'Regional intelligence'], ['operations', 'Operations'], ['history', 'Historical analysis'], ['portfolio', 'Crop portfolio'], ['models', 'Model validation'], ['markets', 'Supply intelligence'], ['data', 'Data explorer'], ['method', 'Methods & sources']];
 function App() {
   const [dataset, setDataset] = useState(null);
   const [results, setResults] = useState(null);
@@ -82,13 +83,14 @@ function App() {
         {view === 'impact' && <ImpactOverview insights={results.insights} dataset={dataset} audience={audience} />}
         <div hidden={view !== 'scenarios'}><ScenarioLab options={results.scenario_options} dataset={dataset} onBusy={setScenarioBusy} /></div>
         <div hidden={view !== 'history'}><HistoricalAnalysis dataset={dataset} onBusy={setScenarioBusy} /></div>
+        <div hidden={view !== 'portfolio'}><CropPortfolio dataset={dataset} onBusy={setScenarioBusy} /></div>
         <div hidden={view !== 'operations'}><Operations dataset={dataset} onBusy={setScenarioBusy} /></div>
         <div hidden={view !== 'regional'}><RegionalIntelligence dataset={dataset} onBusy={setScenarioBusy} /></div>
         {view === 'models' && <><ModelComparison models={results.models} dataset={dataset} />{results.models.available && <button className="secondary" disabled={exporting} onClick={() => save('predictions')}>Download held-out predictions CSV ↓</button>}</>}
         {view === 'markets' && <MarketIntelligence insights={results.insights} dataset={dataset} />}
         {view === 'data' && <DataExplorer dataset={dataset} analysis={results.analysis} />}
         {view === 'method' && <Methodology insights={results.insights} />}
-      </div> : <section className="empty-state"><span className="empty-icon" aria-hidden="true">↗</span><h2>One evidence base. Three perspectives.</h2><p>Upload observations or explore the synthetic demo.<br />Identify historical changes, test models and investigate climate scenarios.</p><div className="feature-tags"><span>Temporal validation</span><span>Prediction intervals</span><span>Local review signals</span><span>Source audit</span></div></section>}
+      </div> : <section className="empty-state"><span className="empty-icon" aria-hidden="true">↗</span><h2>One evidence base. Three perspectives.</h2><p>Upload observations or explore the synthetic demo.<br />Identify historical changes, test models and investigate climate scenarios.</p><div className="feature-tags"><span>Temporal validation</span><span>Prediction intervals</span><span>Trends & unusual years</span><span>Crop portfolio</span><span>Profitability</span><span>Source audit</span></div></section>}
       <footer><span>ORQIVRA / Intelligence rooted in nature</span><span>Exploratory decision support · No guaranteed accuracy · Export to retain your work</span></footer>
     </main>
   </div>;

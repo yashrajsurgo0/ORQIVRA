@@ -45,3 +45,38 @@ class HistoryTest(unittest.TestCase):
         self.assertEqual(response.get_json()['source_type'], 'synthetic')
         self.assertEqual(response.get_json()['years'], 16)
         self.assertEqual(client.post('/api/history', json=[], headers=headers).status_code, 400)
+
+
+class HistoryOptionsTest(unittest.TestCase):
+    def setUp(self):
+        years = list(range(2010, 2020))
+        self.frame = pd.DataFrame({'Year': years * 2, 'Crop': ['Rice'] * 20, 'District': ['A'] * 10 + ['B'] * 10,
+                                   'Crop_Yield': [float(i) for i in range(10)] + [float(i) + 2 for i in range(10)],
+                                   'Rainfall_mm': [100.0] * 20, 'Avg_Temperature_C': [25.0 + i * .1 for i in range(10)] * 2, 'Market_Price': [10.0] * 20})
+        self.base = dict(crop='Rice', year_min=2010, year_max=2019, split_year=2015, yield_threshold=3)
+
+    def test_pooled_districts_and_median(self):
+        pooled = historical_analysis(self.frame, {**self.base, 'district': ''})
+        self.assertEqual(pooled['pooled'], ['District'])
+        self.assertEqual(pooled['annual'][0]['Crop_Yield'], 1)
+        self.assertTrue(any('Pooled' in w for w in pooled['warnings']))
+        single = historical_analysis(self.frame, {**self.base, 'district': 'A', 'aggregation': 'median'})
+        self.assertEqual(single['pooled'], [])
+        self.assertEqual(single['aggregation'], 'median')
+        with self.assertRaises(ValueError):
+            historical_analysis(self.frame, {**self.base, 'aggregation': 'max'})
+
+    def test_trend_rolling_and_anomalies(self):
+        result = historical_analysis(self.frame, {**self.base, 'district': 'A', 'rolling_window': 3, 'anomaly_z': 1.4})
+        trend = next(t for t in result['trends'] if t['metric'] == 'Crop_Yield')
+        self.assertAlmostEqual(trend['slope_per_year'], 1)
+        self.assertAlmostEqual(trend['slope_per_decade'], 10)
+        self.assertAlmostEqual(trend['r_squared'], 1)
+        self.assertIsNone(next(t for t in result['trends'] if t['metric'] == 'Rainfall_mm')['slope_per_year'])
+        self.assertTrue(pd.isna(result['annual'][1]['Crop_Yield_rolling']))
+        self.assertAlmostEqual(result['annual'][2]['Crop_Yield_rolling'], 1)
+        self.assertEqual([a['year'] for a in result['anomalies']['years']], [2010, 2019])
+        self.assertEqual(result['anomalies']['years'][0]['direction'], 'Low')
+        for change in [dict(rolling_window=2), dict(rolling_window=9), dict(anomaly_z=.5)]:
+            with self.assertRaises(ValueError):
+                historical_analysis(self.frame, {**self.base, 'district': 'A', **change})

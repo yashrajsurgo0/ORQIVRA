@@ -78,3 +78,41 @@ class OperationsTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ProfitabilityTest(unittest.TestCase):
+    def test_margin_breakeven_and_grid(self):
+        from operations import profitability
+        result = profitability({'area_ha': 2, 'yield_per_ha': 4000, 'yield_unit': 'kg/ha', 'price': 20, 'price_unit': 'INR/kg',
+                                'cost_per_ha': 40000, 'loss_percent': 10, 'sensitivity_step': 10})
+        self.assertAlmostEqual(result['available_tonnes'], 7.2)
+        self.assertAlmostEqual(result['revenue'], 144000)
+        self.assertAlmostEqual(result['margin'], 64000)
+        self.assertAlmostEqual(result['breakeven_yield'], 40000 / (20000 * .9) * 1000)
+        self.assertAlmostEqual(result['breakeven_price'], 80000 / 7.2 / 1000)
+        self.assertEqual(len(result['sensitivity']), 5)
+        self.assertAlmostEqual(result['sensitivity'][2]['cells'][2]['margin'], 64000)
+        self.assertEqual(result['currency'], 'INR')
+
+    def test_edge_and_invalid_inputs(self):
+        from operations import profitability
+        base = {'area_ha': 1, 'yield_per_ha': 3, 'yield_unit': 't/ha', 'price': 100, 'price_unit': 'USD/t', 'cost_per_ha': 50}
+        self.assertIsNone(profitability({**base, 'loss_percent': 100})['breakeven_yield'])
+        self.assertIsNone(profitability({**base, 'yield_per_ha': 0})['breakeven_price'])
+        self.assertEqual(len(profitability({**base, 'sensitivity_step': 50})['sensitivity']), 5)
+        for change in [dict(price_unit='EUR/t'), dict(price=-1), dict(yield_unit=None), dict(cost_per_ha=True), dict(sensitivity_step=0)]:
+            with self.assertRaises(ValueError):
+                profitability({**base, **change})
+
+    def test_reference_and_api(self):
+        backend.store.clear()
+        client = backend.app.test_client()
+        data = client.post('/api/demo').get_json()
+        headers = {'X-Dataset-ID': data['dataset_id']}
+        ref = client.get('/api/operations/reference?crop=Rice', headers=headers).get_json()
+        self.assertEqual(ref['years'], [2023, 2024, 2025])
+        self.assertEqual(ref['price_unit'], 'INR/t')
+        self.assertEqual(client.get('/api/operations/reference?crop=Nope', headers=headers).status_code, 400)
+        payload = {'area_ha': 1, 'yield_per_ha': ref['median_yield'], 'yield_unit': 't/ha', 'price': ref['median_price'], 'price_unit': 'INR/t', 'cost_per_ha': 30000}
+        self.assertEqual(client.post('/api/operations/profitability', json=payload, headers=headers).status_code, 200)
+        self.assertEqual(client.post('/api/operations/profitability', json=payload).status_code, 404)

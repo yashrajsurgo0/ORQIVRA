@@ -121,3 +121,9 @@ footer>span:first-child { letter-spacing: 1px; color: #37563a; }
   .assistant-shell { padding: 18px; }
   .prompt-options button { width: 100%; text-align: left; }
 }
+/* v2.2 additions: advanced options, trend charts, profitability grid, crop portfolio */
+.advanced-options{margin:4px 0 22px;border-top:1px solid var(--line);padding-top:14px}.advanced-options summary{cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--green)}.advanced-options .form-grid{margin:16px 0 0}
+.chart-controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:18px}.chart-controls label{min-width:220px}.inline-check{display:flex !important;flex-direction:row !important;align-items:center;gap:8px;font-weight:400;min-width:0 !important}.inline-check input{accent-color:var(--green)}
+.highlight-row th,.highlight-row td{background:#fbf3df}
+.sensitivity-table td{text-align:right;font-variant-numeric:tabular-nums}.sensitivity-table th small{font-weight:400;color:var(--muted)}.sensitivity-table td.loss{background:#f8e3dc;color:#8b2f1c}.sensitivity-table td.gain{background:#e6f1e9;color:#1f5a43}.sensitivity-table td.base{outline:2px solid var(--green);outline-offset:-2px;font-weight:700}
+.corr-table td{text-align:center;font-variant-numeric:tabular-nums;min-width:72px}

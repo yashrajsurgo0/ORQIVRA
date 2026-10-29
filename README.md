@@ -22,7 +22,9 @@ Farmers, extension teams, researchers and agricultural businesses need to distin
 - **Model evaluation:** six regression candidates with chronological development folds, separate calibration/test sets, baseline comparisons, subgroup errors and nominal prediction intervals.
 - **Scenario lab:** conditional yield estimates, local reference comparisons, sensitivity analysis and extrapolation warnings.
 - **Crop outlook:** three-year history-only projections chosen through rolling backtests against a last-observed baseline.
-- **Operations:** configurable review thresholds, shared-year district comparisons, production/unit calculations and action tracking.
+- **Historical analysis:** single-location or pooled comparisons, mean or median annual summaries, rolling averages, linear trends with R² and p-values, and automatic flagging of unusual years.
+- **Crop portfolio:** unit-free stability comparison across crops (CV, worst-year shortfall, downside frequency, trend), a yield correlation matrix and an equal-weighted diversification index.
+- **Operations:** configurable review thresholds, shared-year district comparisons, production/unit calculations, a profitability planner (break-even yield and price, margin sensitivity grid) and action tracking.
 - **Data quality:** CSV validation, row-level exclusion audits, source declarations, dataset fingerprints and downloadable evidence reports.
 
 ## Demo walkthrough
@@ -98,7 +100,7 @@ python -m unittest discover -s webapp/backend -v
 CI=true npm run build --prefix webapp/frontend
 ```
 
-Tests cover temporal leakage, conformal intervals, extrapolation, cleaning, workspace isolation, operations, missing/stale weather, provider failure and crop-outlook backtests. The included GitHub Actions workflow repeats the Python suite and frontend build when Actions is enabled. Actions is currently disabled on this repository; release checks were run locally.
+Tests cover historical trends and anomalies, profitability arithmetic, crop portfolio diversification, temporal leakage, conformal intervals, extrapolation, cleaning, workspace isolation, operations, missing/stale weather, provider failure and crop-outlook backtests. The included GitHub Actions workflow repeats the Python suite and frontend build when Actions is enabled. Actions is currently disabled on this repository; release checks were run locally.
 
 ## Honest scope
 
@@ -119,5 +121,19 @@ Developed ORQIVRA, a full-stack agricultural intelligence platform integrating r
 ### Historical analysis
 
 The Historical analysis workspace adds crop, district, season and year filters; equal-year-weighted earlier/recent comparisons; yield variability; rainfall/temperature correlations; and a user-defined yield threshold. Switch between yield, rainfall, temperature and market-price charts, inspect annual observation counts, or export a JSON report with the filters and dataset fingerprint.
+
+Advanced options let you pool all districts or seasons (with a composition warning), switch to median annual summaries, overlay a 3–7 year trailing average, read ordinary least-squares trends per year and per decade, and flag years whose yield lies ±1–2.5 standard deviations from the selection mean, with rainfall and temperature context. Download the annual table as CSV.
+
+### Crop portfolio
+
+Compares crops in one location or pooled across locations using unit-free measures: coefficient of variation, worst-year shortfall, share of years more than one standard deviation below the mean, and trend as % of mean per year. A correlation matrix shows which crops' yields historically moved together, and an equal-weighted relative-yield index measures how much a mixed portfolio would have reduced variability. Descriptive only; prices, area and inputs are not considered.
+
+### Profitability planner
+
+Operations → Profitability turns area, yield, price, all-in cost per hectare and a loss allowance into revenue, margin, break-even yield and break-even price, with a 5 × 5 yield/price sensitivity grid (±5–25% steps). Recent dataset medians can prefill yield and price as a starting point. Pure arithmetic from user assumptions; not a market forecast.
+
+### Weather resilience
+
+Open-Meteo responses are cached for 15 minutes. If the provider rate-limits or fails, ORQIVRA shows the last successful reading for the same location (up to six hours old) with a visible notice, and pauses provider calls for a minute after a rate limit. It never substitutes synthetic weather.
 
 These are descriptive statistics, not forecasts or causal effects. At least four observed years and two years per comparison period are required. Correlations require five years and variation in both variables. Missing years are reported rather than filled; percentage changes are withheld for zero baselines and Celsius temperature. The public demo uses synthetic observations.
