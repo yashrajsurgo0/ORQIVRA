@@ -4,7 +4,7 @@ import { fmt, pct, Notice, Metric, Warnings } from './shared';
 
 const EMPTY_ACTION = { title: '', owner: '', due_date: '', status: 'Open', priority: 'Normal', notes: '' };
 const post = (path, body, method = 'POST') => request(path, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-export default function Operations({ dataset, onBusy }) {
+export default function Operations({ dataset, onBusy, requestedTab }) {
   const [tab, setTab] = useState('review');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -31,6 +31,7 @@ export default function Operations({ dataset, onBusy }) {
     window.addEventListener('orqivra-actions-updated', refresh);
     return () => { active = false; window.removeEventListener('orqivra-actions-updated', refresh); };
   }, []);
+  useEffect(() => { if (requestedTab?.tab) { setTab(requestedTab.tab); setError(''); setSavedMessage(''); } }, [requestedTab]);
   const run = async operation => {
     setBusy(true); onBusy(true); setError(''); setSavedMessage('');
     try { await operation(); } catch (err) { setError(err.message); }
