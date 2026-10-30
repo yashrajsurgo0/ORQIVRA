@@ -32,6 +32,8 @@ class HistoryTest(unittest.TestCase):
         zero = self.frame.assign(Crop_Yield=0)
         self.assertIsNone(historical_analysis(zero, self.filters)['variability']['cv_percent'])
         self.assertEqual(historical_analysis(self.frame, {**self.filters, 'yield_threshold': 0})['threshold']['below_years'], [])
+        self.assertIsNone(historical_analysis(self.frame, {**self.filters, 'yield_threshold': ''})['threshold'])
+        self.assertIsNone(historical_analysis(self.frame, {k: v for k, v in self.filters.items() if k != 'yield_threshold'})['threshold'])
 
     def test_api_workspace_and_provenance(self):
         backend.store.clear()

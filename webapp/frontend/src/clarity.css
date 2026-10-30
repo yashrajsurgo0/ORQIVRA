@@ -1,0 +1,156 @@
+/* Clarity layer: readable sizes, plain-language summaries, explained terms and status colour. */
+:root { --good: #23704f; --good-bg: #e5f1e8; --watch: #8a5d12; --watch-bg: #faf0d9; --bad: #a3391f; --bad-bg: #f9e5de; --info-bg: #eef3e6; }
+
+/* Readable minimum sizes */
+body { font-size: 15px; }
+.eyebrow { font-size: 11px; letter-spacing: 1.6px; }
+.note { font-size: 13px; color: #5d6a5c; line-height: 1.6; }
+.muted { color: #5d6a5c; }
+label { font-size: 13px; }
+label small, .summary-card small { font-size: 12px; }
+.summary-card span { font-size: 13px; color: #4f5d4f; }
+.signal-values span { font-size: 12px; }
+.action-list { font-size: 14px; color: #4f5d4f; }
+.action-label { font-size: 11px; }
+table { font-size: 14px; }
+th, td { padding: 13px 16px; }
+.button-group button, .jump-links button, .operations-tabs button { font-size: 13px; }
+.notice { font-size: 14px; }
+.topbar-label { font-size: 11px; }
+.brand-tagline { font-size: 8px; }
+.hero-story .eyebrow, .hero-signature, .nature-panel-top, .nature-panel-bottom > span { font-size: 10px; }
+.audience-options button { font-size: 13px; }
+.view-nav button { font-size: 14px; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.summary-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+/* Page intro */
+.page-intro { margin-bottom: 22px; }
+.page-intro h2 { margin-bottom: 8px; }
+.page-intro .purpose { margin: 0; color: #4f5d4f; font-size: 15px; max-width: 760px; }
+
+/* Plain-language summary */
+.takeaway { border-radius: 12px; padding: 18px 22px; margin: 20px 0; background: var(--info-bg); border: 1px solid #d3dfc6; border-left: 5px solid var(--green); }
+.takeaway.watch { background: var(--watch-bg); border-color: #ecd9ae; border-left-color: #c6902e; }
+.takeaway.good { background: var(--good-bg); border-color: #c6e0cd; border-left-color: var(--good); }
+.takeaway-title { font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; font-weight: 700; color: var(--green); margin: 0 0 8px; }
+.takeaway.watch .takeaway-title { color: var(--watch); }
+.takeaway ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.takeaway li, .takeaway-text { font-size: 15.5px; line-height: 1.55; color: var(--ink); margin: 0; }
+
+/* Explained terms */
+.term { border-bottom: 1px dotted currentColor; cursor: help; display: inline; outline-offset: 2px; }
+.term-mark { display: inline-grid; place-items: center; width: 15px; height: 15px; margin-left: 4px; border-radius: 50%; background: #e3e8d6; color: var(--green); font-size: 10px; font-weight: 700; vertical-align: 1px; font-style: normal; }
+.term-tip { z-index: 50; background: #102b20; color: #f5f2e6; padding: 12px 14px; border-radius: 10px; font-size: 13px; line-height: 1.5; font-weight: 400; letter-spacing: 0; text-transform: none; text-align: left; white-space: normal; box-shadow: 0 10px 30px #0003; pointer-events: none; }
+.term-tip strong { display: block; color: #e8cf9c; font-size: 12px; margin-bottom: 4px; }
+
+/* Direction chips */
+.delta { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.delta span { font-size: .7em; }
+.delta.good { color: var(--good); }
+.delta.bad { color: var(--bad); }
+.delta.neutral, .delta.none { color: #4f5d4f; }
+
+/* Collapsed caveats */
+.caveats { margin: 22px 0; border: 1px solid #eadcbc; background: #fbf6ea; border-radius: 10px; padding: 14px 18px; color: #6f5a2f; }
+.caveats summary { cursor: pointer; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.caveats summary::-webkit-details-marker { display: none; }
+.caveats summary::before { content: '▸'; transition: transform .15s; }
+.caveats[open] summary::before { transform: rotate(90deg); }
+.caveat-count { background: #efe0bd; border-radius: 10px; padding: 1px 8px; font-size: 12px; }
+.caveats ul { margin: 12px 0 2px; padding-left: 20px; display: grid; gap: 7px; font-size: 14px; line-height: 1.55; }
+
+/* Metric tones */
+.summary-card { border-top: 3px solid transparent; }
+.summary-card.tone-good { border-top-color: var(--good); }
+.summary-card.tone-watch { border-top-color: #d3a14a; }
+.summary-card.tone-bad { border-top-color: var(--bad); }
+.summary-card.tone-good strong { color: var(--good); }
+.summary-card.tone-bad strong { color: var(--bad); }
+
+/* Status chips and cards */
+.status { display: inline-flex; align-items: center; gap: 6px; border-radius: 20px; padding: 5px 11px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.status.alert { background: var(--watch-bg); color: var(--watch); }
+.status.ok { background: var(--good-bg); color: var(--good); }
+.status.unknown { background: #eceee6; color: #5d6a5c; }
+.signal-card { border-left: 4px solid #e3e1d4; }
+.signal-card.alert { border-left-color: #d3a14a; }
+.signal-card.ok { border-left-color: #8fbb9c; }
+.signal-card .compare-line { font-size: 13px; color: #5d6a5c; margin: 0; }
+.signal-values strong { font-size: 19px; }
+.signal-values strong .delta { font-size: inherit; }
+.signal-card .feature-tags span { font-size: 12px; }
+.compact-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 14px; }
+.compact-card { border: 1px solid #e3e1d4; border-left: 4px solid #8fbb9c; background: #fffefa; border-radius: 10px; padding: 14px 16px; display: flex; justify-content: space-between; gap: 12px; align-items: center; font-size: 14px; }
+.compact-card small { display: block; color: #5d6a5c; font-size: 12px; margin-top: 3px; }
+.show-more { margin-top: 16px; }
+
+/* Guided steps */
+.steps { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 0; margin: 20px 0 6px; counter-reset: step; }
+.steps li { counter-increment: step; }
+.steps button { width: 100%; height: 100%; text-align: left; background: #fffefa; color: var(--ink); border: 1px solid #dedfce; border-radius: 12px; padding: 16px 18px; display: grid; gap: 4px; font-weight: 400; }
+.steps button::before { content: 'Step ' counter(step); font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; font-weight: 700; color: var(--green); }
+.steps button strong { font-size: 15px; }
+.steps button span { font-size: 13px; color: #5d6a5c; line-height: 1.45; }
+.steps button:hover:not(:disabled) { background: #f3f5ea; color: var(--ink); border-color: var(--green); }
+
+/* Priority list */
+.priority-list { list-style: none; padding: 0; counter-reset: pr; }
+.priority-list li { counter-increment: pr; display: grid; grid-template-columns: 34px 1fr; gap: 4px 12px; align-items: start; }
+.priority-list li::before { content: counter(pr); grid-row: span 3; width: 30px; height: 30px; border-radius: 50%; background: var(--watch-bg); color: var(--watch); display: grid; place-items: center; font-weight: 700; }
+.priority-list li strong { margin: 4px 0 0; }
+.priority-list .feature-tags { justify-content: flex-start; margin: 2px 0 0; gap: 6px; }
+.priority-list .feature-tags span { font-size: 12px; color: #81652e; background: #fbf7eb; }
+.priority-list .note { margin: 2px 0 0; font-size: 14px; color: #4f5d4f; }
+
+/* Navigation help */
+.tab-help { margin: -22px 0 26px; font-size: 14px; color: #4f5d4f; display: flex; gap: 8px; align-items: baseline; }
+.tab-help b { color: var(--green); font-weight: 600; white-space: nowrap; }
+
+/* Form structure */
+.form-step { margin: 0 0 18px; }
+.form-step > legend, .form-step-title { font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; color: var(--green); margin-bottom: 12px; padding: 0; }
+.form-step .form-grid { margin: 0; }
+.field-hint { font-weight: 400; color: #5d6a5c; font-size: 12px; }
+
+/* Words beside numbers */
+.reading { font-size: 13px; color: #4f5d4f; }
+.reading.good { color: var(--good); font-weight: 600; }
+.reading.watch { color: var(--watch); font-weight: 600; }
+
+/* Glossary */
+.glossary { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin: 18px 0 0; }
+.glossary div { background: #fffefa; border: 1px solid #e3e1d4; border-radius: 10px; padding: 16px 18px; }
+.glossary dt { font-weight: 700; margin-bottom: 6px; }
+.glossary dd { margin: 0; color: #4f5d4f; font-size: 14px; line-height: 1.55; }
+
+@media (max-width: 800px) {
+  .steps { grid-template-columns: 1fr; }
+  .tab-help { margin-top: -26px; flex-direction: column; gap: 2px; }
+  .takeaway { padding: 15px 16px; }
+  .takeaway li, .takeaway-text { font-size: 15px; }
+  .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .signal-values { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .signal-values strong { font-size: 16px; }
+  .audience-options button { font-size: 12px; }
+  .view-nav button { font-size: 13px; }
+}
+@media print { .term-mark, .steps, .show-more { display: none !important; } .caveats ul { display: block; } }
+.signal-values .delta span, .summary-card .delta span { display: inline; margin: 0; font-size: .7em; color: inherit; }
+.legend-inline { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+.form-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tool-help { margin: -8px 0 20px; font-size: 14px; color: #4f5d4f; }
+.status + .status { margin-left: 4px; }
+th .status { margin-left: 8px; font-size: 11px; padding: 3px 8px; }
+@media (max-width: 800px) { .form-grid.three { grid-template-columns: 1fr 1fr; } }
+/* Inline pieces inside metric cards must not inherit the card label style. */
+.summary-card > span .term, .summary-card strong span, .summary-card small span { display: inline; margin: 0; font-size: inherit; color: inherit; }
+.summary-card .term-mark { display: inline-grid; margin: 0 0 0 4px; font-size: 10px; color: var(--green); }
+.summary-card .term-tip { display: block; font-size: 13px; color: #f5f2e6; margin: 0; }
+.summary-card .term-tip strong { display: block; font-size: 12px; color: #e8cf9c; font-family: inherit; font-weight: 700; }
+.summary-card strong .delta > span, .summary-card small .delta > span { font-size: .7em; }
+.summary-card strong .delta { font-size: inherit; }
+.shared-notes { background: #f3f3e8; border: 1px solid #e3e1d4; border-radius: 10px; padding: 4px 18px 14px; margin: 0 0 18px; }
+.shared-notes .action-label { margin-top: 14px; }
+.corr-table th { text-align: center; } .corr-table tbody th { text-align: left; }

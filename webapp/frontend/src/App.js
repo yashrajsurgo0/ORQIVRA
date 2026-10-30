@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import './App.css';
 import './brand.css';
+import './clarity.css';
 import FileUpload from './components/FileUpload';
 import ModelComparison from './components/ModelComparison';
 import ImpactOverview from './components/ImpactOverview';
@@ -16,6 +17,19 @@ import { Notice } from './components/shared';
 import { request, exportFile, getToken, clearToken } from './api';
 
 const audiences = [['field', 'Farmers & extension'], ['research', 'Researchers & policy'], ['business', 'Business & supply']];
+// One line per view: what you can do there, in plain words.
+const tabHelp = {
+  impact: 'Your summary: what changed this year and where to start.',
+  scenarios: 'Ask "what if": change rainfall or temperature and see the model’s expected yield.',
+  regional: 'Live weather, 7-day forecast and soil moisture for any location, plus an evidence assistant.',
+  operations: 'Turn findings into action: review thresholds, compare districts, plan production and profit, track tasks.',
+  history: 'How one crop has changed over the years: trends, unusual years and links with weather.',
+  portfolio: 'Which crops have been steadiest, and which ones balance each other’s bad years.',
+  models: 'How accurate the yield models are on years they never saw, and where they miss.',
+  markets: 'Yield and price history for one crop across every location.',
+  data: 'Browse every record, what was excluded and why.',
+  method: 'How everything is calculated, its limits, sources and a glossary of terms.'
+};
 const tabNames = { impact: 'Impact overview', scenarios: 'Scenario lab', regional: 'Regional intelligence', operations: 'Operations', history: 'Historical analysis', portfolio: 'Crop portfolio', models: 'Model validation', markets: 'Supply intelligence', data: 'Data explorer', method: 'Methods & sources' };
 // Each perspective leads with the tools its users reach for first; everything else stays one click away.
 const perspectives = {
@@ -97,7 +111,8 @@ function App() {
       {dataset && dataset.source_type !== 'synthetic' && <Notice>Source: {dataset.source_name} · {dataset.source_type === 'observed' ? 'Observed, as declared by uploader' : 'Unverified provenance'}. Yield: {dataset.yield_unit} · Price: {dataset.price_unit}. Source and units have not been independently verified.</Notice>}
       {results ? <div key={dataset.quality.fingerprint}>
         <nav className="view-nav" aria-label="Workspace views">{visibleTabs.map(key => <button key={key} disabled={loading || uploading || restoring} aria-pressed={view === key} className={`${view === key ? 'selected' : ''} ${primaryTabs.includes(key) ? '' : 'secondary-tab'}`} onClick={() => setView(key)}>{key === 'impact' ? perspective.overview : tabNames[key]}</button>)}{otherTabs.length > 0 && !otherTabs.includes(view) && <button className="more-tools" aria-expanded={showAllTools} onClick={() => setShowAllTools(!showAllTools)}>{showAllTools ? 'Fewer tools ‹' : `More tools (${otherTabs.length}) ›`}</button>}</nav>
-        {view === 'impact' && <ImpactOverview insights={results.insights} dataset={dataset} audience={audience} models={results.models} onNavigate={navigate} />}
+        {view !== 'impact' && <p className="tab-help"><b>{view === 'impact' ? perspective.overview : tabNames[view]}:</b> <span>{tabHelp[view]}</span></p>}
+        {view === 'impact' && <ImpactOverview key={audience} insights={results.insights} dataset={dataset} audience={audience} models={results.models} onNavigate={navigate} />}
         <div hidden={view !== 'scenarios'}><ScenarioLab options={results.scenario_options} dataset={dataset} onBusy={setScenarioBusy} /></div>
         <div hidden={view !== 'history'}><HistoricalAnalysis dataset={dataset} onBusy={setScenarioBusy} /></div>
         <div hidden={view !== 'portfolio'}><CropPortfolio dataset={dataset} onBusy={setScenarioBusy} /></div>

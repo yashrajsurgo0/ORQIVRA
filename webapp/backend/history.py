@@ -51,7 +51,8 @@ def historical_analysis(frame, payload):
     if low >= high:
         raise ValueError('Choose a start year earlier than the end year.')
     split = number(payload.get('split_year'), 'Recent period starts', low + 1, high, True)
-    threshold = number(payload.get('yield_threshold'), 'Yield threshold', 0, 10000000)
+    raw_threshold = payload.get('yield_threshold')
+    threshold = None if raw_threshold in (None, '') else number(raw_threshold, 'Yield threshold', 0, 10000000)
     aggregation = payload.get('aggregation', 'mean')
     if aggregation not in ('mean', 'median'):
         raise ValueError('Annual summary must be mean or median.')
@@ -113,7 +114,7 @@ def historical_analysis(frame, payload):
             'earlier_years': earlier.Year.tolist(), 'recent_years': recent.Year.tolist(), 'comparisons': comparisons,
             'variability': {'mean': mean, 'sample_std': std, 'cv_percent': std / mean * 100 if mean > 0 else None,
                             'minimum': float(yields.min()), 'maximum': float(yields.max())},
-            'threshold': {'value': threshold, 'below_years': annual.loc[yields < threshold, 'Year'].tolist(),
+            'threshold': None if threshold is None else {'value': threshold, 'below_years': annual.loc[yields < threshold, 'Year'].tolist(),
                           'below_percent': float((yields < threshold).mean() * 100),
                           'note': 'Frequency among observed annual values, not a probability of future crop failure.'},
             'associations': associations, 'trends': trends,

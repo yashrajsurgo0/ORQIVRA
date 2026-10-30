@@ -132,6 +132,10 @@ Compares crops in one location or pooled across locations using unit-free measur
 
 Operations → Profitability turns area, yield, price, all-in cost per hectare and a loss allowance into revenue, margin, break-even yield and break-even price, with a 5 × 5 yield/price sensitivity grid (±5–25% steps). Recent dataset medians can prefill yield and price as a starting point. Pure arithmetic from user assumptions; not a market forecast.
 
+### Designed to be read quickly
+
+Every main view opens with an **In plain words** summary generated from the results (for example, "Rice yield has risen about 0.3 t/ha per decade, a clear long-run rise"). Technical terms (CV, MAE, R², p-value, correlation, break-even) are underlined with a **?** that explains them on hover or tap, and the full glossary sits under Methods & sources. Changes carry coloured arrows (green good, red bad, grey neutral), status chips mark groups that need a look, caveats sit in one collapsible "Keep in mind" panel, and each perspective brief ends with three guided next steps.
+
 ### Weather resilience
 
 Open-Meteo responses are cached for 15 minutes. If the provider rate-limits or fails, ORQIVRA shows the last successful reading for the same location (up to six hours old) with a visible notice, and pauses provider calls for a minute after a rate limit. It never substitutes synthetic weather.
