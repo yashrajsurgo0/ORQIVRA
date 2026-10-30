@@ -35,6 +35,7 @@ class RegionalTest(unittest.TestCase):
     def test_provider_http_failure_has_safe_actionable_message(self):
         for status, message in [(429, 'rate limit'), (403, 'HTTP 403')]:
             regional._cache.clear()
+            regional._cooldown['until'] = 0
             with patch('regional.urlopen', side_effect=HTTPError('https://api.open-meteo.com/private', status, 'provider detail', {}, None)):
                 with self.assertLogs('regional', level='WARNING') as logs:
                     response = self.client.post('/api/regional/weather', headers=self.headers,
@@ -113,6 +114,27 @@ class RegionalTest(unittest.TestCase):
         self.assertEqual(response.status_code, 503)
         self.assertIn('no synthetic weather', response.get_json()['error'])
         self.assertIsNone(backend.store.get(self.token).regional_weather)
+
+    def test_rate_limit_serves_labelled_stale_response_then_cools_down(self):
+        regional._cache.clear()
+        regional._cooldown['until'] = 0
+        params = {'latitude': 1, 'longitude': 2}
+        key = 'https://api.open-meteo.com/v1/forecast?latitude=1&longitude=2'
+        regional._cache[key] = (regional.time.monotonic() - 1000, {'value': 1, '_orqivra_fetched_at': 'earlier'})
+        error = HTTPError('https://api.open-meteo.com/x', 429, 'limit', {}, None)
+        with patch('regional.urlopen', side_effect=error) as call, self.assertLogs('regional', level='WARNING'):
+            stale = regional.fetch_json('https://api.open-meteo.com/v1/forecast', params)
+            self.assertTrue(stale['_orqivra_stale'])
+            self.assertEqual(stale['_orqivra_fetched_at'], 'earlier')
+            again = regional.fetch_json('https://api.open-meteo.com/v1/forecast', params)
+            self.assertTrue(again['_orqivra_stale'])
+            self.assertEqual(call.call_count, 1)
+        self.assertNotIn('_orqivra_stale', regional._cache[key][1])
+        regional._cache[key] = (regional.time.monotonic() - regional.STALE_LIMIT - 1, {'value': 1})
+        with self.assertRaises(regional.ServiceUnavailable):
+            regional.fetch_json('https://api.open-meteo.com/v1/forecast', params)
+        regional._cooldown['until'] = 0
+        regional._cache.clear()
 
     def test_cache_preserves_retrieval_timestamp(self):
         raw = provider()

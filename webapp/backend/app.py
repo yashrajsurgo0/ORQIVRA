@@ -13,7 +13,8 @@ from werkzeug.exceptions import HTTPException
 from data import prepare, demo_data
 from modeling import train_models, scenario_options, predict_scenario
 from regional import locations, weather, briefing
-from operations import review_settings, benchmark, production_plan, task_fields
+from operations import review_settings, benchmark, production_plan, task_fields, profitability, recent_reference
+from portfolio import crop_portfolio
 from insights import build_insights
 from history import historical_analysis
 from store import Workspace, WorkspaceStore
@@ -83,7 +84,7 @@ def create_workspace(raw, metadata):
 
 @app.get('/api/health')
 def health():
-    return respond({'status': 'healthy', 'version': '2.1', 'public_demo': app.config['PUBLIC_DEMO'], 'timestamp': datetime.now(timezone.utc).isoformat()})
+    return respond({'status': 'healthy', 'version': '2.2', 'public_demo': app.config['PUBLIC_DEMO'], 'timestamp': datetime.now(timezone.utc).isoformat()})
 
 
 @app.post('/api/upload')
@@ -230,6 +231,24 @@ def compare_districts():
 def calculate_production():
     current()
     return respond(production_plan(object_payload()))
+
+
+@app.post('/api/operations/profitability')
+def calculate_profitability():
+    current()
+    return respond(profitability(object_payload()))
+
+
+@app.get('/api/operations/reference')
+def crop_reference():
+    item = current()
+    return respond({**recent_reference(item.frame, request.args.get('crop')), 'price_unit': item.metadata['price_unit'], 'yield_unit': item.metadata['yield_unit']})
+
+
+@app.post('/api/portfolio')
+def portfolio():
+    item = current()
+    return respond({**crop_portfolio(item.frame, object_payload()), 'yield_unit': item.metadata['yield_unit'], 'dataset_fingerprint': item.audit['fingerprint']})
 
 
 @app.post('/api/history')

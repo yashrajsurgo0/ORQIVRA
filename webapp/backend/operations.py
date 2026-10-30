@@ -108,3 +108,57 @@ def task_fields(payload, partial=False):
         except ValueError:
             raise ValueError('Use YYYY-MM-DD for the due date.') from None
     return result
+
+
+PRICE_UNITS = {'INR/t': ('INR', 1), 'INR/kg': ('INR', 1000), 'USD/t': ('USD', 1), 'USD/kg': ('USD', 1000)}
+
+
+def recent_reference(df, crop, years=3):
+    """Median price and yield over the latest observed years for one crop; a starting point, not a forecast."""
+    if crop not in df.Crop.unique():
+        raise ValueError('Choose a crop in this dataset.')
+    subset = df[df.Crop == crop]
+    latest = sorted(subset.Year.unique())[-years:]
+    recent = subset[subset.Year.isin(latest)]
+    return {'crop': crop, 'years': [int(y) for y in latest], 'rows': len(recent),
+            'median_price': float(recent.Market_Price.median()), 'median_yield': float(recent.Crop_Yield.median()),
+            'note': 'Median of the latest observed years across all locations and seasons for this crop. Nominal prices; not a price or yield forecast.'}
+
+
+def profitability(payload):
+    area = number(payload.get('area_ha'), 'Area (ha)', .001, 1000000)
+    expected = number(payload.get('yield_per_ha'), 'Assumed yield', 0, 10000000)
+    price = number(payload.get('price'), 'Assumed price', 0, 1e9)
+    cost = number(payload.get('cost_per_ha'), 'Cost per hectare', 0, 1e9)
+    loss = number(payload.get('loss_percent', 0), 'Loss allowance (%)', 0, 100)
+    step = number(payload.get('sensitivity_step', 10), 'Sensitivity step (%)', 1, 50)
+    unit, price_unit = payload.get('yield_unit'), payload.get('price_unit')
+    if unit not in ['t/ha', 'kg/ha']:
+        raise ValueError('Select t/ha or kg/ha explicitly for the assumed yield.')
+    if price_unit not in PRICE_UNITS:
+        raise ValueError('Select a price unit: INR/t, INR/kg, USD/t or USD/kg.')
+    currency, per_tonne = PRICE_UNITS[price_unit]
+    yield_t = expected / (1000 if unit == 'kg/ha' else 1)
+    price_t = price * per_tonne
+
+    def margin(y_factor, p_factor):
+        tonnes = area * yield_t * y_factor * (1 - loss / 100)
+        return tonnes * price_t * p_factor - area * cost
+
+    available = area * yield_t * (1 - loss / 100)
+    revenue, total_cost = available * price_t, area * cost
+    sellable_share = 1 - loss / 100
+    breakeven_yield = None if price_t == 0 or sellable_share == 0 else cost / (price_t * sellable_share) * (1000 if unit == 'kg/ha' else 1)
+    breakeven_price = None if available == 0 else total_cost / available / per_tonne
+    factors = [1 + step / 100 * k for k in (-2, -1, 0, 1, 2)]
+    grid = [{'yield_change_percent': (fy - 1) * 100, 'yield_per_ha': expected * fy,
+             'cells': [{'price_change_percent': (fp - 1) * 100, 'price': price * fp, 'margin': margin(fy, fp)} for fp in factors]}
+            for fy in factors if fy >= 0]
+    return {'currency': currency, 'price_unit': price_unit, 'yield_unit': unit, 'area_ha': area, 'loss_percent': loss,
+            'available_tonnes': available, 'revenue': revenue, 'total_cost': total_cost, 'margin': revenue - total_cost,
+            'margin_per_ha': (revenue - total_cost) / area, 'margin_percent': (revenue - total_cost) / revenue * 100 if revenue > 0 else None,
+            'breakeven_yield': breakeven_yield, 'breakeven_price': breakeven_price,
+            'yield_headroom_percent': (expected - breakeven_yield) / expected * 100 if breakeven_yield is not None and expected > 0 else None,
+            'price_headroom_percent': (price - breakeven_price) / price * 100 if breakeven_price is not None and price > 0 else None,
+            'sensitivity_step': step, 'sensitivity': grid,
+            'note': 'Arithmetic from your assumptions only. Not a market, price or yield forecast; costs, prices and losses are user supplied.'}

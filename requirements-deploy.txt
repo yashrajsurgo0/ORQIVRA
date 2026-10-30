@@ -3,4 +3,5 @@ Flask-CORS>=4,<7
 numpy>=2,<3
 pandas>=2.2,<3
 scikit-learn>=1.6,<1.9
+scipy>=1.11,<2
 gunicorn>=23,<24

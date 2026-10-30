@@ -18,6 +18,16 @@ from operations import number
 SOURCE = 'https://open-meteo.com/en/docs'
 _cache = OrderedDict()
 _cache_lock = threading.Lock()
+_cooldown = {'until': 0.0}
+STALE_LIMIT = 6 * 3600
+COOLDOWN_SECONDS = 60
+
+
+def _stale_or_raise(cached, message):
+    # Prefer a clearly labelled earlier provider response to an empty panel; never synthesize weather.
+    if cached and time.monotonic() - cached[0] < STALE_LIMIT:
+        return {**cached[1], '_orqivra_stale': True, '_orqivra_stale_reason': message}
+    raise ServiceUnavailable(message)
 
 
 def fetch_json(host, params, ttl=900):
@@ -27,6 +37,9 @@ def fetch_json(host, params, ttl=900):
         cached = _cache.get(url)
         if cached and time.monotonic() - cached[0] < ttl:
             return cached[1]
+        cooling = time.monotonic() < _cooldown['until']
+    if cooling:
+        return _stale_or_raise(cached, 'Weather provider rate limit reached recently. Please try again in a minute. No synthetic weather has been substituted.')
     # Python.org macOS installations may lack a linked CA bundle; retain TLS
     # verification using the OS trust bundle when available.
     tls = ssl.create_default_context()
@@ -39,12 +52,15 @@ def fetch_json(host, params, ttl=900):
             raise ValueError('Invalid provider response')
     except HTTPError as exc:
         logging.getLogger(__name__).warning('Weather provider HTTP status=%s', exc.code)
+        if exc.code == 429:
+            with _cache_lock:
+                _cooldown['until'] = time.monotonic() + COOLDOWN_SECONDS
         message = ('Weather provider rate limit reached. Please try again later.' if exc.code == 429
                    else f'Weather provider rejected the request (HTTP {exc.code}). Please try again later.')
-        raise ServiceUnavailable(message + ' No synthetic weather has been substituted.') from None
+        return _stale_or_raise(cached, message + ' No synthetic weather has been substituted.')
     except (URLError, TimeoutError, ValueError, OSError) as exc:
         logging.getLogger(__name__).warning('Weather provider failed: %s', type(exc).__name__)
-        raise ServiceUnavailable('Weather provider is unavailable. Retry shortly; no synthetic weather has been substituted.') from None
+        return _stale_or_raise(cached, 'Weather provider is unavailable. Retry shortly; no synthetic weather has been substituted.')
     data['_orqivra_fetched_at'] = datetime.now(timezone.utc).isoformat()
     with _cache_lock:
         _cache[url] = (time.monotonic(), data)
@@ -102,6 +118,7 @@ def weather(payload):
     return {'location': {'name': label, 'latitude': lat, 'longitude': lon}, 'grid': {'latitude': raw.get('latitude'), 'longitude': raw.get('longitude'), 'elevation_m': raw.get('elevation')},
             'timezone': raw.get('timezone'), 'utc_offset_seconds': raw.get('utc_offset_seconds', 0), 'current': current, 'current_units': raw.get('current_units', {}),
             'daily': rows, 'soil': soil, 'retrieved_at': raw.get('_orqivra_fetched_at', datetime.now(timezone.utc).isoformat()),
+            'stale': bool(raw.get('_orqivra_stale')), 'stale_reason': raw.get('_orqivra_stale_reason'),
             'source': SOURCE, 'attribution': 'Weather data by Open-Meteo (CC BY 4.0). Free endpoint for non-commercial use.',
             'limitations': ['Current conditions and recent history are weather-model estimates, not your field sensor measurements.',
                            'Soil moisture is volumetric modeled water content, not a soil fertility or irrigation requirement measurement.',
